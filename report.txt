@@ -1,0 +1,42 @@
+# MNIST assignment report
+
+## Feature Extraction (Max 300 Words)
+
+For feature extraction, I chose Principal Component Analysis (PCA) to perform dimensionality reduction to reduce the 784 (28x28) dimensional feature space to a smaller one, which improves computational efficiency and adheres to the rule specifying that 'the training and evaluation programs should complete within 5 minutes when run on a standard server'. Moreover, the nature of the test datasets (i.e., with Gaussian noise and 15x15 pixel occlusions) means that some information will need to be filtered out and discarded respectively, which dimensionality reduction using PCA is efficient at doing. Finally, a small dataset size of 3000 with 784 features carries the risk of overfitting to the training data, which PCA can mitigate the chances of.
+
+The feature extraction pipeline within the program is as follows:
+- Preprocessing:
+    - The training data is cast to `int64` format to prevent under/overflows, which is necessary for this dataset as pixel values range from 0 to 255.
+    - The mean and standard deviation of the pixel values are calculated across the training images to then allow for standardisation, thereby ensuring unit mean and variance which allows each feature to contribute equally to analysis.
+- Dimensionality reduction:
+    - PCA is implemented using Singular Value Decomposition for efficiency as this avoids the expensive direct computation of the covariance matrix. Using `np.linalg.svd`, the right singular vectors are calculated and store the principal components ordered by amount of variance.
+    - The standardised images are then projected onto the top 55 principal components; 55 was arrived at through iterative methods measuring the most variance captured with the lowest noise and redundancy.
+- Training and inference modes
+    - In training mode, the PCA parameters are calculated and stored.
+    - In inference mode, precalculated PCA parameters are loaded to use on new data.
+    - These methods were put into one function as opposed to separate ones to reduce code complexity.
+
+## Classifier Design (Max 300 Words)
+
+A K-Nearest Neighbours (KNN) classifier with a k value of 5 was chosen for its simplicity of implementation and efficiency with small datasets. An inverse-distance weighting was also employed to prioritise local neighbours over distant ones in the feature space, which is useful in a case such as this assignment where data points from different classes are close to each other, and so misclassification due to outliers can occur. As KNN is not a parameter-learning but a lazy-learning algorithm, there is more flexibility but memory and computational cost increase during predictions, a trade-off which has been weighed carefully and made here.
+
+The classifier is encapsulated within the `KNN` class, with explicit training and prediction methods (`fit` and `predict` respectively): 
+    - The `fit` method stores the feature vectors previously reduced using PCA - `training_features` - and their corresponding labels - `training_labels` - for use during inference. 
+    - The `predict` method uses `scipy`'s `cdist` function to calculate the Euclidean distances between each test sample and all training samples. Euclidean distance was chosen as the metric due to its computational efficiency over a more complex metric like cosine similarity, which would introduce overhead that is not needed for this dataset's fairly separable, linear nature. `np.argpartition` is then used to identify the indices of the 5 nearest neighbours without fully sorting the array to reduce unnecessary calculations. These indices' corresponding labels and distances are then extracted and given weights calculated as the inverse of their distances to ensure closer neighbours contribute more to the final prediction. The `label_weights` dictionary is then used to aggregate the contributions, with the highest-weighted label being predicted as the number in the image, thereby making the classification robust and resolute against ties.
+
+## Performance
+
+Model loaded from trained_model.pkl
+Model loaded from trained_model.pkl
+Accuracy on noise_test set: 90.60%
+Accuracy on mask_test set: 77.50%
+
+## Analysis of Results [Max 400 Words]
+
+Overall, the code uses efficient feature extraction and classification techniques to output an acceptable level of accuracy regarding its classifications without being too computationally expensive. One strength of the code is that final output is calculated in under 5 minutes on a standard device, thereby demonstrating its efficiency and adherence to the rules regarding output. It also has many safeguards against errors, such as introducing very small numbers to remove 'division-by-zero' errors and casting data to `int64` format to avoid over/underflow errors. Additionally, the KNN classifier used is simple to debug and understand while being robust with the inverse-distance weighing feature which reduces the influence of outliers. However, KNNs require storing the entire training dataset in memory and performing complex calculations during inference, which can become memory-intensive if a larger dataset was used. Furthermore, with more complex data (i.e., numbers that are barely indistinguishable for even humans) the KNN may underperform due to the Euclidean distance calculation not effectively distinguishing similar images. 
+
+In summary, while there are challenges in scalability and adaptability to different data sets, the code is robust and efficient for the given MNIST data, and even in the case of more complex data would require minor changes and refactoring to ensure a consistent level of accuracy.
+
+## Other information (Optional, Max 100 words)
+
+The code was implemented in Python 3.12.8 using Visual Studio Code on a system running Windows 11 Home (Version 24H2, Build 26100). The system is equipped with an AMD64 processor, 7.5 GB of RAM, and relies on key libraries such as `numpy`, `scipy`, with the other files of `utils.py`, `evaluate.py` and `train.py` unchanged but necessary for compilation and running of `system.py`.
