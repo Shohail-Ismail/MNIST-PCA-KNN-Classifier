@@ -8,7 +8,7 @@
 
 # Background information
 
-PCA-KNN classifier for a modified MNIST dataset, where the goal is to accurately predict labels (digits 0 - 9) from 28x28 grayscale images of handwritten digits. 
+PCA-KNN classifier for a modified MNIST dataset made for my COM2104 (Data Driven Computing) module, where the goal is to accurately predict labels (digits 0 - 9) from 28x28 grayscale images of handwritten digits. 
 The classifier is trained on 3,000 images and has been tested on 2 datasets, namely 1000 noisy images simulated using Gaussian noise and 1000 masked images with 15x15 block occlusions. 
 
 In the current implementation, the model outputs a classification accuracy of 90.60% for the noisy dataset and 77.50% for the masked dataset.
