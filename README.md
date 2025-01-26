@@ -38,7 +38,7 @@ In the current implementation, the model outputs a classification accuracy of 90
 
 To run the project, ensure you have the following environment set up:
 
-- **Required Python Version**: Python 3.12.8
+- **Required Python version**: Python 3.12.8
 - **Libraries**:
    - `numpy`
    - `scipy`
